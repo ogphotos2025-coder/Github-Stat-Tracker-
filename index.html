@@ -19,101 +19,23 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            background-color: var(--color-canvas-default);
-            color: var(--color-fg-default);
-            padding: 40px 20px;
-        }
-
+        body { font-family: -apple-system, sans-serif; background-color: var(--color-canvas-default); color: var(--color-fg-default); padding: 40px 20px; }
         .container { max-width: 1012px; margin: 0 auto; }
-
-        .header {
-            border-bottom: 1px solid var(--color-border-default);
-            padding-bottom: 24px;
-            margin-bottom: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
+        .header { border-bottom: 1px solid var(--color-border-default); padding-bottom: 24px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
         .search-box { display: flex; gap: 8px; }
-
-        input {
-            background-color: var(--color-canvas-default);
-            color: var(--color-fg-default);
-            border: 1px solid var(--color-border-default);
-            padding: 5px 12px;
-            font-size: 14px;
-            border-radius: 6px;
-            width: 240px;
-            outline: none;
-        }
-
-        button {
-            background-color: var(--color-btn-bg);
-            color: white;
-            padding: 5px 16px;
-            font-size: 14px;
-            font-weight: 500;
-            border-radius: 6px;
-            border: 1px solid rgba(240, 246, 252, 0.1);
-            cursor: pointer;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 296px 1fr;
-            gap: 24px;
-        }
-
-        .side-card {
-            border: 1px solid var(--color-border-default);
-            background-color: var(--color-canvas-default);
-            border-radius: 6px;
-            padding: 16px;
-            height: fit-content;
-        }
-
-        .avatar {
-            width: 100%;
-            border-radius: 50%;
-            border: 1px solid var(--color-border-default);
-            margin-bottom: 16px;
-        }
-
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-top: 1px solid var(--color-border-default);
-            font-size: 14px;
-        }
-
+        input { background-color: var(--color-canvas-default); color: var(--color-fg-default); border: 1px solid var(--color-border-default); padding: 5px 12px; font-size: 14px; border-radius: 6px; width: 240px; outline: none; }
+        button { background-color: var(--color-btn-bg); color: white; padding: 5px 16px; font-size: 14px; border-radius: 6px; border: 1px solid rgba(240,246,252,0.1); cursor: pointer; }
+        .dashboard-grid { display: grid; grid-template-columns: 296px 1fr; gap: 24px; }
+        .side-card { border: 1px solid var(--color-border-default); padding: 16px; border-radius: 6px; height: fit-content; }
+        .avatar { width: 100%; border-radius: 50%; border: 1px solid var(--color-border-default); margin-bottom: 16px; }
+        .stat-item { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--color-border-default); font-size: 14px; }
         .main-col { display: flex; flex-direction: column; gap: 24px; }
-
-        .chart-grid-inner {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        .chart-card {
-            border: 1px solid var(--color-border-default);
-            background-color: var(--color-canvas-subtle);
-            border-radius: 6px;
-            padding: 24px;
-        }
-
-        .chart-card h3 { font-size: 14px; margin-bottom: 16px; font-weight: 600; color: var(--color-fg-muted); text-transform: uppercase; }
-
-        @media (max-width: 850px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-            .chart-grid-inner { grid-template-columns: 1fr; }
-        }
+        .chart-card { border: 1px solid var(--color-border-default); background-color: var(--color-canvas-subtle); border-radius: 6px; padding: 24px; }
+        .repo-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; }
+        .repo-table th { text-align: left; color: var(--color-fg-muted); border-bottom: 1px solid var(--color-border-default); padding-bottom: 8px; }
+        .repo-table td { padding: 12px 0; border-bottom: 1px solid var(--color-border-default); }
+        .repo-name { color: var(--color-accent-fg); font-weight: 600; text-decoration: none; }
+        .lang-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -128,22 +50,23 @@
 
         <div id="dashboard-content" class="dashboard-grid" style="display:none;">
             <div id="sidebar" class="side-card"></div>
-
             <div class="main-col">
                 <div class="chart-card">
-                    <h3>Repository & Star Growth</h3>
-                    <div style="height: 250px;"><canvas id="barChart"></canvas></div>
+                    <h3>Top Languages</h3>
+                    <div style="height: 200px;"><canvas id="langChart"></canvas></div>
                 </div>
-                
-                <div class="chart-grid-inner">
-                    <div class="chart-card">
-                        <h3>Language Distribution</h3>
-                        <div style="height: 200px;"><canvas id="langChart"></canvas></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Public Engagement</h3>
-                        <div style="height: 200px;"><canvas id="engageChart"></canvas></div>
-                    </div>
+                <div class="chart-card">
+                    <h3>Top Repositories</h3>
+                    <table class="repo-table">
+                        <thead>
+                            <tr>
+                                <th>Repository</th>
+                                <th>Language</th>
+                                <th>Stars</th>
+                            </tr>
+                        </thead>
+                        <tbody id="repo-body"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -151,101 +74,61 @@
 
     <script>
         let charts = [];
-
         async function updateStats() {
             const user = document.getElementById('usernameInput').value.trim();
             if (!user) return;
-
             try {
-                // 1. Fetch User Data
                 const userRes = await fetch(`https://api.github.com/users/${user}`);
                 const userData = await userRes.json();
-                if (!userRes.ok) throw new Error("User not found");
-
-                // 2. Fetch Repo Data (to get stars and languages)
-                const repoRes = await fetch(`https://api.github.com/users/${user}/repos?per_page=100`);
+                const repoRes = await fetch(`https://api.github.com/users/${user}/repos?per_page=100&sort=updated`);
                 const repos = await repoRes.json();
 
-                // 3. Process Data
+                document.getElementById('dashboard-content').style.display = 'grid';
+                
                 let totalStars = 0;
                 let langs = {};
                 repos.forEach(repo => {
                     totalStars += repo.stargazers_count;
-                    if (repo.language) {
-                        langs[repo.language] = (langs[repo.language] || 0) + 1;
-                    }
+                    if (repo.language) langs[repo.language] = (langs[repo.language] || 0) + 1;
                 });
 
-                document.getElementById('dashboard-content').style.display = 'grid';
-                
-                // Sidebar Setup
+                // Sidebar
                 document.getElementById('sidebar').innerHTML = `
                     <img src="${userData.avatar_url}" class="avatar">
-                    <h2 style="font-size: 20px; color: var(--color-fg-default);">${userData.name || userData.login}</h2>
-                    <p style="color: var(--color-fg-muted); margin-bottom: 16px;">@${userData.login}</p>
-                    <div class="stat-item"><span>Public Repos</span><strong>${userData.public_repos}</strong></div>
-                    <div class="stat-item"><span>Total Stars</span><strong style="color: var(--color-attention-fg);">★ ${totalStars}</strong></div>
-                    <div class="stat-item"><span>Followers</span><strong>${userData.followers}</strong></div>
-                    <div class="stat-item"><span>Following</span><strong>${userData.following}</strong></div>
+                    <h2>${userData.name || userData.login}</h2>
+                    <p style="color:var(--color-fg-muted);">@${userData.login}</p>
+                    <div class="stat-item"><span>Repos</span><strong>${userData.public_repos}</strong></div>
+                    <div class="stat-item"><span>Stars</span><strong style="color:var(--color-attention-fg);">★ ${totalStars}</strong></div>
                 `;
 
+                // Top Repos Table (Top 5 by Stars)
+                const topRepos = [...repos].sort((a,b) => b.stargazers_count - a.stargazers_count).slice(0, 5);
+                document.getElementById('repo-body').innerHTML = topRepos.map(repo => `
+                    <tr>
+                        <td><a href="${repo.html_url}" target="_blank" class="repo-name">${repo.name}</a></td>
+                        <td>${repo.language || 'N/A'}</td>
+                        <td>★ ${repo.stargazers_count}</td>
+                    </tr>
+                `).join('');
+
+                // Language Chart
                 charts.forEach(c => c.destroy());
                 charts = [];
-
-                // Bar Chart: Repos vs Stars
-                const ctxBar = document.getElementById('barChart').getContext('2d');
-                charts.push(new Chart(ctxBar, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Repositories', 'Total Stars'],
-                        datasets: [{
-                            data: [userData.public_repos, totalStars],
-                            backgroundColor: ['#58a6ff', '#d29922']
-                        }]
-                    },
-                    options: { 
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } } }
-                    }
-                }));
-
-                // Pie Chart: Languages
-                const ctxLang = document.getElementById('langChart').getContext('2d');
-                charts.push(new Chart(ctxLang, {
+                const ctx = document.getElementById('langChart').getContext('2d');
+                charts.push(new Chart(ctx, {
                     type: 'doughnut',
                     data: {
                         labels: Object.keys(langs).slice(0, 5),
                         datasets: [{
                             data: Object.values(langs).slice(0, 5),
                             backgroundColor: ['#238636', '#58a6ff', '#d29922', '#f85149', '#8b949e'],
-                            borderColor: '#161b22'
+                            borderColor: '#0d1117'
                         }]
                     },
                     options: { responsive: true, maintainAspectRatio: false }
                 }));
-
-                // Engagement Chart
-                const ctxEng = document.getElementById('engageChart').getContext('2d');
-                charts.push(new Chart(ctxEng, {
-                    type: 'polarArea',
-                    data: {
-                        labels: ['Followers', 'Following'],
-                        datasets: [{
-                            data: [userData.followers, userData.following],
-                            backgroundColor: ['rgba(35, 134, 54, 0.5)', 'rgba(88, 166, 255, 0.5)'],
-                            borderColor: '#30363d'
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, scales: { r: { grid: { color: '#30363d' } } } }
-                }));
-
-            } catch (err) { alert(err.message); }
+            } catch (err) { alert("User not found"); }
         }
-
-        document.getElementById("usernameInput").addEventListener("keypress", (e) => {
-            if (e.key === "Enter") updateStats();
-        });
     </script>
 </body>
 </html>
