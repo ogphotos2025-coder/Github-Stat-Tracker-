@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Analytics | Professional Edition</title>
+    <title>GitHub Pro Analytics | Hireability & Benchmarking</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -13,59 +13,69 @@
             --color-fg-default: #c9d1d9;
             --color-fg-muted: #8b949e;
             --color-accent-fg: #58a6ff;
-            --color-btn-bg: #238636;
-            --color-btn-hover: #2ea043;
+            --color-success-fg: #3fb950;
             --color-attention-fg: #d29922;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, sans-serif; background-color: var(--color-canvas-default); color: var(--color-fg-default); padding: 40px 20px; }
         .container { max-width: 1012px; margin: 0 auto; }
-        .header { border-bottom: 1px solid var(--color-border-default); padding-bottom: 24px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        .header { border-bottom: 1px solid var(--color-border-default); padding-bottom: 24px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; }
         .search-box { display: flex; gap: 8px; }
-        input { background-color: var(--color-canvas-default); color: var(--color-fg-default); border: 1px solid var(--color-border-default); padding: 5px 12px; font-size: 14px; border-radius: 6px; width: 240px; outline: none; }
-        button { background-color: var(--color-btn-bg); color: white; padding: 5px 16px; font-size: 14px; border-radius: 6px; border: 1px solid rgba(240,246,252,0.1); cursor: pointer; }
+        input { background-color: var(--color-canvas-default); color: var(--color-fg-default); border: 1px solid var(--color-border-default); padding: 8px 12px; border-radius: 6px; outline: none; }
+        button { background-color: #238636; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        
         .dashboard-grid { display: grid; grid-template-columns: 296px 1fr; gap: 24px; }
-        .side-card { border: 1px solid var(--color-border-default); padding: 16px; border-radius: 6px; height: fit-content; }
-        .avatar { width: 100%; border-radius: 50%; border: 1px solid var(--color-border-default); margin-bottom: 16px; }
-        .stat-item { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--color-border-default); font-size: 14px; }
+        .side-card { border: 1px solid var(--color-border-default); padding: 16px; border-radius: 6px; background: var(--color-canvas-subtle); }
+        .avatar { width: 100%; border-radius: 50%; margin-bottom: 16px; border: 1px solid var(--color-border-default); }
+        
         .main-col { display: flex; flex-direction: column; gap: 24px; }
-        .chart-card { border: 1px solid var(--color-border-default); background-color: var(--color-canvas-subtle); border-radius: 6px; padding: 24px; }
-        .repo-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; }
-        .repo-table th { text-align: left; color: var(--color-fg-muted); border-bottom: 1px solid var(--color-border-default); padding-bottom: 8px; }
-        .repo-table td { padding: 12px 0; border-bottom: 1px solid var(--color-border-default); }
-        .repo-name { color: var(--color-accent-fg); font-weight: 600; text-decoration: none; }
-        .lang-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; }
+        .card { border: 1px solid var(--color-border-default); background-color: var(--color-canvas-subtle); border-radius: 6px; padding: 24px; }
+        
+        /* Hireability Meter */
+        .hire-meter { text-align: center; margin-bottom: 20px; }
+        .score-circle { width: 120px; height: 120px; border-radius: 50%; border: 8px solid var(--color-border-default); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 28px; font-weight: bold; color: var(--color-success-fg); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: var(--color-fg-muted); font-size: 12px; border-bottom: 1px solid var(--color-border-default); padding-bottom: 8px; }
+        td { padding: 12px 0; border-bottom: 1px solid var(--color-border-default); font-size: 14px; }
+        .repo-link { color: var(--color-accent-fg); text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>GitHub Analytics Dashboard</h1>
+            <h1>GitHub SaaS Auditor</h1>
             <div class="search-box">
                 <input type="text" id="usernameInput" placeholder="Enter username...">
-                <button onclick="updateStats()">Generate Report</button>
+                <button onclick="updateStats()">Analyze Profile</button>
             </div>
         </div>
 
         <div id="dashboard-content" class="dashboard-grid" style="display:none;">
-            <div id="sidebar" class="side-card"></div>
+            <div class="side-col">
+                <div id="sidebar" class="side-card"></div>
+            </div>
+            
             <div class="main-col">
-                <div class="chart-card">
-                    <h3>Top Languages</h3>
-                    <div style="height: 200px;"><canvas id="langChart"></canvas></div>
+                <div class="card" style="display: flex; gap: 40px; align-items: center;">
+                    <div class="hire-meter">
+                        <h3>Hireability Score</h3>
+                        <div class="score-circle" id="hireScore">0%</div>
+                        <p id="hireRank" style="font-weight: 600;"></p>
+                    </div>
+                    <div style="flex-grow: 1; height: 200px;">
+                        <h3>Global Benchmarking (Percentile)</h3>
+                        <canvas id="benchChart"></canvas>
+                    </div>
                 </div>
-                <div class="chart-card">
-                    <h3>Top Repositories</h3>
-                    <table class="repo-table">
+
+                <div class="card">
+                    <h3>Top Professional Repositories</h3>
+                    <table>
                         <thead>
-                            <tr>
-                                <th>Repository</th>
-                                <th>Language</th>
-                                <th>Stars</th>
-                            </tr>
+                            <tr><th>Name</th><th>Language</th><th>Popularity</th></tr>
                         </thead>
-                        <tbody id="repo-body"></tbody>
+                        <tbody id="repo-table-body"></tbody>
                     </table>
                 </div>
             </div>
@@ -73,61 +83,71 @@
     </div>
 
     <script>
-        let charts = [];
+        let benchChart = null;
+
         async function updateStats() {
             const user = document.getElementById('usernameInput').value.trim();
             if (!user) return;
+            
             try {
-                const userRes = await fetch(`https://api.github.com/users/${user}`);
-                const userData = await userRes.json();
-                const repoRes = await fetch(`https://api.github.com/users/${user}/repos?per_page=100&sort=updated`);
-                const repos = await repoRes.json();
+                const [uRes, rRes] = await Promise.all([
+                    fetch(`https://api.github.com/users/${user}`),
+                    fetch(`https://api.github.com/users/${user}/repos?sort=stars&per_page=100`)
+                ]);
+                const userData = await uRes.json();
+                const repos = await rRes.json();
 
                 document.getElementById('dashboard-content').style.display = 'grid';
+
+                // 1. Calculate Hireability
+                let totalStars = repos.reduce((sum, r) => sum + r.stargazers_count, 0);
+                let uniqueLangs = new Set(repos.map(r => r.language).filter(l => l)).size;
                 
-                let totalStars = 0;
-                let langs = {};
-                repos.forEach(repo => {
-                    totalStars += repo.stargazers_count;
-                    if (repo.language) langs[repo.language] = (langs[repo.language] || 0) + 1;
+                // SaaS Algorithm
+                let score = Math.min(100, (totalStars * 2) + (userData.followers * 1.5) + (userData.public_repos * 0.5) + (uniqueLangs * 5));
+                score = Math.round(score);
+
+                const circle = document.getElementById('hireScore');
+                circle.innerText = score + "%";
+                circle.style.borderColor = score > 70 ? '#3fb950' : (score > 40 ? '#d29922' : '#f85149');
+                document.getElementById('hireRank').innerText = score > 80 ? "Top-Tier Talent" : "Rising Contributor";
+
+                // 2. Global Benchmarking Chart
+                if(benchChart) benchChart.destroy();
+                benchChart = new Chart(document.getElementById('benchChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Stars', 'Followers', 'Repos'],
+                        datasets: [
+                            { label: 'You', data: [totalStars, userData.followers, userData.public_repos], backgroundColor: '#58a6ff' },
+                            { label: 'Global Avg', data: [10, 5, 15], backgroundColor: '#30363d' }
+                        ]
+                    },
+                    options: { 
+                        indexAxis: 'y', 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#c9d1d9' } } },
+                        scales: { x: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' } }, y: { ticks: { color: '#8b949e' } } }
+                    }
                 });
 
-                // Sidebar
+                // Sidebar & Table
                 document.getElementById('sidebar').innerHTML = `
                     <img src="${userData.avatar_url}" class="avatar">
-                    <h2>${userData.name || userData.login}</h2>
+                    <h2 style="font-size: 20px;">${userData.name || userData.login}</h2>
                     <p style="color:var(--color-fg-muted);">@${userData.login}</p>
-                    <div class="stat-item"><span>Repos</span><strong>${userData.public_repos}</strong></div>
-                    <div class="stat-item"><span>Stars</span><strong style="color:var(--color-attention-fg);">★ ${totalStars}</strong></div>
                 `;
 
-                // Top Repos Table (Top 5 by Stars)
-                const topRepos = [...repos].sort((a,b) => b.stargazers_count - a.stargazers_count).slice(0, 5);
-                document.getElementById('repo-body').innerHTML = topRepos.map(repo => `
+                document.getElementById('repo-table-body').innerHTML = repos.slice(0, 5).map(r => `
                     <tr>
-                        <td><a href="${repo.html_url}" target="_blank" class="repo-name">${repo.name}</a></td>
-                        <td>${repo.language || 'N/A'}</td>
-                        <td>★ ${repo.stargazers_count}</td>
+                        <td><a class="repo-link" href="${r.html_url}" target="_blank">${r.name}</a></td>
+                        <td>${r.language || 'N/A'}</td>
+                        <td>★ ${r.stargazers_count}</td>
                     </tr>
                 `).join('');
 
-                // Language Chart
-                charts.forEach(c => c.destroy());
-                charts = [];
-                const ctx = document.getElementById('langChart').getContext('2d');
-                charts.push(new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(langs).slice(0, 5),
-                        datasets: [{
-                            data: Object.values(langs).slice(0, 5),
-                            backgroundColor: ['#238636', '#58a6ff', '#d29922', '#f85149', '#8b949e'],
-                            borderColor: '#0d1117'
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                }));
-            } catch (err) { alert("User not found"); }
+            } catch (e) { alert("Error fetching data"); }
         }
     </script>
 </body>
