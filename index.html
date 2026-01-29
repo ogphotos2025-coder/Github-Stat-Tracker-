@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Stat Tracker</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .search-box { margin-bottom: 20px; }
+        input { padding: 12px; border-radius: 6px; border: 1px solid #30363d; background: #161b22; color: white; width: 250px; }
+        button { padding: 12px 20px; border-radius: 6px; border: none; background-color: #238636; color: white; font-weight: bold; cursor: pointer; margin-left: 10px; }
+        button:hover { background-color: #2ea043; }
+        #display { margin-top: 20px; }
+        .card { background: #161b22; border: 1px solid #30363d; padding: 25px; border-radius: 12px; text-align: center; width: 300px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        img { border-radius: 50%; border: 3px solid #30363d; margin-bottom: 15px; }
+        .rank { color: #58a6ff; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+    <h1>GitHub Stat Tracker</h1>
+    
+    <div class="search-box">
+        <input type="text" id="usernameInput" placeholder="Enter GitHub username...">
+        <button onclick="updateStats()">Search</button>
+    </div>
+
+    <div id="display"></div>
+
+    <script>
+        async function updateStats() {
+            const typedUsername = document.getElementById('usernameInput').value.trim();
+            const displayArea = document.getElementById('display');
+
+            if (!typedUsername) {
+                alert("Please enter a username!");
+                return;
+            }
+
+            displayArea.innerHTML = "<p>Searching...</p>";
+
+            try {
+                const response = await fetch(`https://api.github.com/users/${typedUsername}`);
+                
+                if (!response.ok) {
+                    displayArea.innerHTML = "<p style='color:#f85149;'>User not found!</p>";
+                    return;
+                }
+
+                const data = await response.json();
+                const score = (data.public_repos * 10) + (data.followers * 5);
+                
+                let rank = "Beginner Scout";
+                if (score > 100) rank = "Code Warrior";
+                if (score > 500) rank = "Open Source Legend";
+
+                displayArea.innerHTML = `
+                    <div class="card">
+                        <img src="${data.avatar_url}" width="120">
+                        <h2 style="margin:0;">${data.name || typedUsername}</h2>
+                        <p class="rank">${rank}</p>
+                        <p>Score: <strong>${score}</strong></p>
+                        <hr style="border:0.5px solid #30363d;">
+                        <p>Public Repos: ${data.public_repos}</p>
+                        <p>Followers: ${data.followers}</p>
+                    </div>
+                `;
+            } catch (error) {
+                displayArea.innerHTML = "<p>Network error. Try again.</p>";
+            }
+        }
+
+        document.getElementById("usernameInput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") updateStats();
+        });
+    </script>
+</body>
+</html>
