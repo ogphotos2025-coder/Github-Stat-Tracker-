@@ -116,6 +116,14 @@
             height: 300px;
         }
 
+        /* Rubric / progress */
+        .rubric-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .rubric-meta { flex: 1; }
+        .rubric-label { font-weight: 600; color: #333; margin-bottom: 6px; }
+        .progress { background: #eef2ff; border-radius: 999px; height: 10px; overflow: hidden; }
+        .progress > i { display: block; height: 100%; background: linear-gradient(90deg,#30cfd0,#667eea); border-radius: 999px; }
+        .rubric-tip { color: #666; font-size: 0.9em; margin-left: 12px; min-width: 140px; text-align: right; }
+
         .top-repos {
             background: white;
             border-radius: 15px;
@@ -232,7 +240,7 @@
         }
 
         function displayDashboard(data) {
-            const { user, languages, commit_hours, commit_days, activity_types, repo_stats, last_updated } = data;
+            const { user, languages, commit_hours, commit_days, activity_types, repo_stats, monthly_commits, monthly_commits_avg, pr_stats, repo_health, hireability_breakdown, last_updated } = data;
 
             // Display user card
             const userCard = `
@@ -287,6 +295,26 @@
                         </div>
                     </div>
                     <div class="chart-card">
+                        <h3>📈 Commits — Last 12 months</h3>
+                        <div class="chart-container">
+                            <canvas id="monthlyCommitsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>🔁 PR Merge Rate</h3>
+                        <div class="chart-container" style="display:flex;align-items:center;gap:18px;">
+                            <canvas id="prStatsChart" style="width:160px;height:160px;"></canvas>
+                            <div style="flex:1;">
+                                <div style="font-weight:700;font-size:18px;margin-bottom:6px;">Merge rate &amp; time-to-merge</div>
+                                <div id="prSummary" style="color:#666;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-card" id="rubricCard">
+                        <h3>🧭 Hireability Rubric</h3>
+                        <div id="rubricContent" style="margin-top:12px;"></div>
+                    </div>
+                    <div class="chart-card">
                         <h3>🎯 Activity Types</h3>
                         <div class="chart-container">
                             <canvas id="activityTypesChart"></canvas>
@@ -319,7 +347,12 @@
             createLanguagesChart(languages);
             createCommitHoursChart(commit_hours);
             createCommitDaysChart(commit_days);
+            createMonthlyCommitsChart(monthly_commits || {});
+            createPRStatsChart(pr_stats || {});
             createActivityTypesChart(activity_types);
+
+            // Rubric (actionable guidance)
+            renderRubric(document.getElementById('rubricContent'), { hireability_breakdown, repo_health, monthly_commits_avg, repo_stats });
         }
 
         function createLanguagesChart(languages) {
@@ -460,6 +493,71 @@
                     }
                 }
             });
+        }
+
+        function createMonthlyCommitsChart(monthly_commits) {
+            try {
+                const ctx = document.getElementById('monthlyCommitsChart').getContext('2d');
+                const labels = Object.keys(monthly_commits).slice(-12);
+                const data = labels.map(k => monthly_commits[k] || 0);
+                new Chart(ctx, {
+                    type: 'line',
+                    data: { labels, datasets: [{ label: 'Commits', data, borderColor: '#30cfd0', backgroundColor: 'rgba(48,207,208,0.12)', tension: 0.25 }] },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            } catch (err) { /* noop when missing */ }
+        }
+
+        function createPRStatsChart(pr_stats) {
+            try {
+                const ctx = document.getElementById('prStatsChart').getContext('2d');
+                const total = pr_stats.total_prs || 0;
+                const merged = pr_stats.merged_prs || 0;
+                const unmerged = Math.max(0, total - merged);
+
+                const ds = total ? [merged, unmerged] : [1];
+                const colors = total ? ['#667eea', '#e6e9f8'] : ['#d1d5db'];
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels: total ? ['Merged','Open/Other'] : ['No PR data'], datasets: [{ data: ds, backgroundColor: colors }] },
+                    options: { cutout: '70%', plugins: { legend: { display: false } } }
+                });
+
+                const summary = total ? `${Math.round((merged/total)*100)}% merged • avg ${pr_stats.avg_time_to_merge_hours || '—'} hrs` : 'No PRs found in recent activity.';
+                document.getElementById('prSummary').innerText = summary;
+            } catch (err) { /* noop */ }
+        }
+
+        function renderRubric(container, data) {
+            if (!container) return;
+            const hb = data.hireability_breakdown || {};
+            const health = data.repo_health || {};
+            const rows = [
+                { id: 'consistency', label: 'Consistency (commits / mo)', value: Math.min(100, (hb.consistency || 0) / 8 * 100), goal: '8+/mo', tip: 'Commit small improvements weekly' },
+                { id: 'collab', label: 'Collaboration (PR merge %)', value: hb.collaboration || 0, goal: '≥80%', tip: 'Open PRs with clear descriptions & tests' },
+                { id: 'readme', label: 'Docs (README)', value: (health.has_readme || 0) / Math.max(1, health.total_repos_checked) * 100, goal: 'Docs for most repos', tip: 'Add README with demo and usage' },
+                { id: 'ci', label: 'CI & Tests', value: (health.has_ci || 0) / Math.max(1, health.total_repos_checked) * 100, goal: 'CI on key repos', tip: 'Add a basic GitHub Actions workflow' },
+                { id: 'pop', label: 'Popularity (stars+followers)', value: Math.min(100, ((hb.stars || 0) + (hb.followers || 0)) / 50 * 100), goal: '50+ combined', tip: 'Polish one repo and promote it' }
+            ];
+
+            container.innerHTML = rows.map(r => `
+                <div class="rubric-item">
+                    <div class="rubric-meta">
+                        <div class="rubric-label">${r.label} <span style="color:#888;font-weight:600;margin-left:8px;font-size:0.9em">${r.goal}</span></div>
+                        <div class="progress"><i style="width: ${Math.round(r.value)}%"></i></div>
+                    </div>
+                    <div class="rubric-tip">${r.tip}</div>
+                </div>
+            `).join('');
+
+            // short actionable summary
+            const improveCTA = document.createElement('div');
+            improveCTA.style.marginTop = '12px';
+            improveCTA.style.color = '#555';
+            improveCTA.style.fontSize = '0.95em';
+            improveCTA.innerText = 'Tip: start with adding README + one CI workflow for your top repo — estimated effort: 1–2 hours.';
+            container.appendChild(improveCTA);
         }
 
         // Load data when page loads

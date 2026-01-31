@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitHub SaaS | Comparison & Radar Audit</title>
+    <!-- Redirect to the comparator UI (keeps original file intact) -->
+    <meta http-equiv="refresh" content="0; url=./files/index.html">
+    <link rel="canonical" href="./files/index.html">
+    <script>
+      // JS fallback for environments that ignore meta refresh
+      if (location.pathname === '/' || location.pathname.endsWith('/index.html')) {
+        try { location.replace('./files/index.html'); } catch (e) { /* noop */ }
+      }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
