@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub SaaS | Comparison & Radar Audit</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --accent-1: #58a6ff;
+            --accent-2: #f778ba;
+            --success: #238636;
+        }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        
+        /* Battle Mode Search */
+        .search-area { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+        .input-group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        input { background: var(--card); color: white; border: 1px solid var(--border); padding: 10px; border-radius: 6px; width: 220px; }
+        .vs-badge { align-self: center; font-weight: bold; font-size: 24px; color: var(--border); margin-top: 20px; }
+        .audit-btn { background: var(--success); color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; max-width: 500px; display: block; margin-left: auto; margin-right: auto; }
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 20px; display: none; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+        .profile-header { text-align: center; margin-bottom: 15px; }
+        .avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--border); }
+        .score-display { font-size: 32px; font-weight: bold; margin: 10px 0; }
+        
+        .radar-container { height: 450px; }
+        h3 { font-size: 14px; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
+        
+        .u1-text { color: var(--accent-1); }
+        .u2-text { color: var(--accent-2); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>GitHub SaaS Professional Audit</h1>
+            <p>Compare Developer DNA & Hireability Benchmarks</p>
+        </div>
+
+        <div class="search-area">
+            <div class="input-group">
+                <label class="u1-text">Primary Candidate</label>
+                <input type="text" id="user1" placeholder="Username 1..." value="ogphotos2025-coder">
+            </div>
+            <div class="vs-badge">VS</div>
+            <div class="input-group">
+                <label class="u2-text">Secondary Candidate</label>
+                <input type="text" id="user2" placeholder="Username 2...">
+            </div>
+        </div>
+        <button class="audit-btn" onclick="runComparison()">Run Comparative Audit</button>
+
+        <div id="dashboard" class="dashboard">
+            <div class="sidebar">
+                <div class="card profile-header" id="card1"></div>
+                <div class="card" style="margin-top:20px;">
+                    <h3>Hireability Index</h3>
+                    <div id="score1" class="score-display u1-text">0%</div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="card radar-container">
+                    <h3 style="text-align:center;">Developer DNA: Radar Map</h3>
+                    <canvas id="comparisonRadar"></canvas>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="card profile-header" id="card2"></div>
+                <div class="card" style="margin-top:20px;">
+                    <h3>Hireability Index</h3>
+                    <div id="score2" class="score-display u2-text">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let radarChart = null;
+
+        async function fetchAuditData(username) {
+            if (!username) return null;
+            const [uRes, rRes] = await Promise.all([
+                fetch(`https://api.github.com/users/${username}`),
+                fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`)
+            ]);
+            return { user: await uRes.json(), repos: await rRes.json() };
+        }
+
+        function calculateSaaSMetrics(data) {
+            const repos = data.repos;
+            const user = data.user;
+            let stars = repos.reduce((s, r) => s + r.stargazers_count, 0);
+            
+            // Skill Mapping Logic
+            const langs = repos.map(r => r.language).filter(l => l);
+            const skills = {
+                Frontend: (langs.filter(l => ['JavaScript','TypeScript','HTML','CSS','Vue'].includes(l)).length / langs.length) * 10 || 2,
+                Backend: (langs.filter(l => ['Python','Java','PHP','Go','C#','Ruby'].includes(l)).length / langs.length) * 10 || 2,
+                Systems: (langs.filter(l => ['C++','C','Rust','Assembly'].includes(l)).length / langs.length) * 10 || 1,
+                Data: (langs.filter(l => ['Python','R','Jupyter Notebook','SQL'].includes(l)).length / langs.length) * 10 || 1,
+                Mobile: (langs.filter(l => ['Swift','Kotlin','Dart','Objective-C'].includes(l)).length / langs.length) * 10 || 1
+            };
+
+            const hireScore = Math.min(100, (stars * 3) + (user.followers * 2) + (user.public_repos * 0.5));
+            return { skills: Object.values(skills), score: Math.round(hireScore) };
+        }
+
+        async function runComparison() {
+            const u1 = document.getElementById('user1').value;
+            const u2 = document.getElementById('user2').value;
+            if (!u1 || !u2) return alert("Please enter both usernames to compare.");
+
+            const data1 = await fetchAuditData(u1);
+            const data2 = await fetchAuditData(u2);
+            
+            const metrics1 = calculateSaaSMetrics(data1);
+            const metrics2 = calculateSaaSMetrics(data2);
+
+            document.getElementById('dashboard').style.display = 'grid';
+
+            // Update Cards
+            document.getElementById('card1').innerHTML = `<img class="avatar" src="${data1.user.avatar_url}"><h2>${data1.user.name || u1}</h2><p>@${u1}</p>`;
+            document.getElementById('card2').innerHTML = `<img class="avatar" src="${data2.user.avatar_url}"><h2>${data2.user.name || u2}</h2><p>@${u2}</p>`;
+            document.getElementById('score1').innerText = metrics1.score + "%";
+            document.getElementById('score2').innerText = metrics2.score + "%";
+
+            // Radar Chart
+            const ctx = document.getElementById('comparisonRadar').getContext('2d');
+            if(radarChart) radarChart.destroy();
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Frontend', 'Backend', 'Systems', 'Data Science', 'Mobile'],
+                    datasets: [
+                        { label: u1, data: metrics1.skills, backgroundColor: 'rgba(88, 166, 255, 0.2)', borderColor: '#58a6ff', borderWidth: 2 },
+                        { label: u2, data: metrics2.skills, backgroundColor: 'rgba(247, 120, 186, 0.2)', borderColor: '#f778ba', borderWidth: 2 }
+                    ]
+                },
+                options: {
+                    scales: { r: { angleLines: { color: '#30363d' }, grid: { color: '#30363d' }, pointLabels: { color: '#8b949e' }, ticks: { display: false }, min: 0 } },
+                    plugins: { legend: { labels: { color: '#c9d1d9' } } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

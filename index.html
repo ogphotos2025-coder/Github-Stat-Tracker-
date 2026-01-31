@@ -3,106 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub SaaS | Comparison & Radar Audit</title>
+    <title>GitHub SaaS Professional Audit</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-radar@1.0.0"></script>
     <style>
         :root {
             --bg: #0d1117;
             --card: #161b22;
             --border: #30363d;
             --text: #c9d1d9;
-            --accent-1: #58a6ff;
-            --accent-2: #f778ba;
-            --success: #238636;
+            --primary: #58a6ff;
+            --secondary: #f778ba;
+            --success: #3fb950;
         }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-        
-        /* Battle Mode Search */
-        .search-area { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
-        .input-group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        input { background: var(--card); color: white; border: 1px solid var(--border); padding: 10px; border-radius: 6px; width: 220px; }
-        .vs-badge { align-self: center; font-weight: bold; font-size: 24px; color: var(--border); margin-top: 20px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 20px; line-height: 1.6; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { text-align: center; font-size: 2.5em; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #8b949e; margin-bottom: 30px; }
+        .input-section { display: flex; gap: 20px; justify-content: center; align-items: center; margin-bottom: 30px; flex-wrap: wrap; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-weight: bold; font-size: 0.9em; }
+        .input-group.primary label { color: var(--primary); }
+        .input-group.secondary label { color: var(--secondary); }
+        input { padding: 10px; background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-size: 1em; min-width: 250px; }
+        input:focus { outline: none; border-color: var(--primary); }
+        .vs { font-size: 1.5em; font-weight: bold; color: #8b949e; }
         .audit-btn { background: var(--success); color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; max-width: 500px; display: block; margin-left: auto; margin-right: auto; }
-
-        .dashboard { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 20px; display: none; }
+        .audit-btn:hover { opacity: 0.9; }
+        #dashboard { display: none; grid-template-columns: 1fr 2fr 1fr; gap: 20px; margin-top: 30px; }
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
-        .profile-header { text-align: center; margin-bottom: 15px; }
-        .avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--border); }
         .score-display { font-size: 32px; font-weight: bold; margin: 10px 0; }
+        .u1-text { color: var(--primary); }
+        .u2-text { color: var(--secondary); }
+        .profile-img { width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 15px; display: block; border: 3px solid var(--border); }
+        .username { text-align: center; font-size: 1.3em; font-weight: bold; }
+        .handle { text-align: center; color: #8b949e; margin-bottom: 15px; }
+        h3 { margin-bottom: 15px; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
         
-        .radar-container { height: 450px; }
-        h3 { font-size: 14px; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
-        
-        .u1-text { color: var(--accent-1); }
-        .u2-text { color: var(--accent-2); }
+        .rubric-toggle {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .rubric-toggle:hover {
+            background: var(--border);
+        }
+        .rubric-content {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(88, 166, 255, 0.05);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .rubric-content.show {
+            display: block;
+        }
+        .metric-row {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .metric-title {
+            font-weight: bold;
+            font-size: 1em;
+        }
+        .metric-score {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            transition: width 0.3s ease;
+        }
+        .metric-details {
+            font-size: 0.9em;
+            color: #8b949e;
+            margin-bottom: 5px;
+        }
+        .recommendation {
+            font-size: 0.9em;
+            color: var(--primary);
+            font-style: italic;
+            margin-top: 5px;
+        }
+        .action-item {
+            background: rgba(63, 185, 80, 0.1);
+            border-left: 3px solid var(--success);
+            padding: 8px 12px;
+            margin-top: 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        @media (max-width: 1024px) {
+            #dashboard { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>GitHub SaaS Professional Audit</h1>
-            <p>Compare Developer DNA & Hireability Benchmarks</p>
-        </div>
-
-        <div class="search-area">
-            <div class="input-group">
-                <label class="u1-text">Primary Candidate</label>
-                <input type="text" id="user1" placeholder="Username 1..." value="ogphotos2025-coder">
+        <h1>GitHub SaaS Professional Audit</h1>
+        <p class="subtitle">Compare Developer DNA & Hireability Benchmarks</p>
+        
+        <div class="input-section">
+            <div class="input-group primary">
+                <label>Primary Candidate</label>
+                <input type="text" id="user1" placeholder="Enter GitHub username">
             </div>
-            <div class="vs-badge">VS</div>
-            <div class="input-group">
-                <label class="u2-text">Secondary Candidate</label>
-                <input type="text" id="user2" placeholder="Username 2...">
+            <div class="vs">VS</div>
+            <div class="input-group secondary">
+                <label>Secondary Candidate</label>
+                <input type="text" id="user2" placeholder="Enter GitHub username">
             </div>
         </div>
         <button class="audit-btn" onclick="runComparison()">Run Comparative Audit</button>
 
-        <div id="dashboard" class="dashboard">
-            <div class="sidebar">
-                <div class="card profile-header" id="card1"></div>
-                <div class="card" style="margin-top:20px;">
+        <div id="dashboard">
+            <div class="card">
+                <img id="avatar1" class="profile-img" src="" alt="Profile">
+                <div id="name1" class="username">Username</div>
+                <div id="handle1" class="handle">@handle</div>
+                <div>
                     <h3>Hireability Index</h3>
                     <div id="score1" class="score-display u1-text">0%</div>
+                    <button class="rubric-toggle" onclick="toggleRubric('rubric1')">
+                        <span>📊 How to Improve</span>
+                        <span id="arrow1">▼</span>
+                    </button>
+                    <div id="rubric1" class="rubric-content"></div>
                 </div>
             </div>
 
-            <div class="main-content">
-                <div class="card radar-container">
-                    <h3 style="text-align:center;">Developer DNA: Radar Map</h3>
-                    <canvas id="comparisonRadar"></canvas>
-                </div>
+            <div class="card">
+                <h3 style="text-align:center; margin-bottom: 20px;">Developer DNA: Radar Map</h3>
+                <canvas id="radarChart" width="400" height="400"></canvas>
             </div>
 
-            <div class="sidebar">
-                <div class="card profile-header" id="card2"></div>
-                <div class="card" style="margin-top:20px;">
+            <div class="card">
+                <img id="avatar2" class="profile-img" src="" alt="Profile">
+                <div id="name2" class="username">Username</div>
+                <div id="handle2" class="handle">@handle</div>
+                <div>
                     <h3>Hireability Index</h3>
                     <div id="score2" class="score-display u2-text">0%</div>
+                    <button class="rubric-toggle" onclick="toggleRubric('rubric2')">
+                        <span>📊 How to Improve</span>
+                        <span id="arrow2">▼</span>
+                    </button>
+                    <div id="rubric2" class="rubric-content"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let radarChart = null;
-
-        async function fetchAuditData(username) {
-            if (!username) return null;
-            const [uRes, rRes] = await Promise.all([
-                fetch(`https://api.github.com/users/${username}`),
-                fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`)
-            ]);
-            return { user: await uRes.json(), repos: await rRes.json() };
-        }
-
         function calculateSaaSMetrics(data) {
             const repos = data.repos;
             const user = data.user;
             let stars = repos.reduce((s, r) => s + r.stargazers_count, 0);
             
-            // Skill Mapping Logic
             const langs = repos.map(r => r.language).filter(l => l);
             const skills = {
                 Frontend: (langs.filter(l => ['JavaScript','TypeScript','HTML','CSS','Vue'].includes(l)).length / langs.length) * 10 || 2,
@@ -113,7 +202,155 @@
             };
 
             const hireScore = Math.min(100, (stars * 3) + (user.followers * 2) + (user.public_repos * 0.5));
-            return { skills: Object.values(skills), score: Math.round(hireScore) };
+            
+            const breakdown = {
+                stars: stars,
+                followers: user.followers,
+                repos: user.public_repos,
+                starsPoints: stars * 3,
+                followersPoints: user.followers * 2,
+                reposPoints: user.public_repos * 0.5,
+                totalPoints: (stars * 3) + (user.followers * 2) + (user.public_repos * 0.5)
+            };
+            
+            return { skills: Object.values(skills), score: Math.round(hireScore), breakdown, user };
+        }
+
+        function generateRubric(metrics, userName) {
+            const { breakdown, score } = metrics;
+            const maxScore = 100;
+            
+            const starsPercent = Math.min(100, (breakdown.starsPoints / 33) * 100);
+            const followersPercent = Math.min(100, (breakdown.followersPoints / 33) * 100);
+            const reposPercent = Math.min(100, (breakdown.reposPoints / 33) * 100);
+            
+            const starsTarget = 17;
+            const followersTarget = 17;
+            const reposTarget = 67;
+            
+            const starsNeeded = Math.max(0, starsTarget - breakdown.stars);
+            const followersNeeded = Math.max(0, followersTarget - breakdown.followers);
+            const reposNeeded = Math.max(0, reposTarget - breakdown.repos);
+            
+            return `
+                <div style="margin-bottom: 15px; padding: 10px; background: rgba(88, 166, 255, 0.1); border-radius: 6px;">
+                    <strong>Overall Score: ${score}%</strong><br>
+                    <span style="font-size: 0.9em; color: #8b949e;">Based on ${breakdown.totalPoints.toFixed(1)} points</span>
+                </div>
+
+                <div class="metric-row">
+                    <div class="metric-header">
+                        <span class="metric-title">⭐ Repository Stars</span>
+                        <span class="metric-score">${starsPercent.toFixed(0)}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${starsPercent}%"></div>
+                    </div>
+                    <div class="metric-details">
+                        • Current: ${breakdown.stars} stars = ${breakdown.starsPoints.toFixed(1)} points (×3 multiplier)
+                    </div>
+                    ${starsNeeded > 0 ? `
+                        <div class="recommendation">
+                            💡 Get ${starsNeeded} more stars for an additional ${(starsNeeded * 3).toFixed(1)} points
+                        </div>
+                        <div class="action-item">
+                            ✓ Focus on quality: One well-documented project can attract stars<br>
+                            ✓ Share your work on Reddit, Twitter, and dev communities<br>
+                            ✓ Add clear README files with screenshots and usage examples
+                        </div>
+                    ` : `
+                        <div class="recommendation" style="color: var(--success);">
+                            ✓ Excellent star count! You're above target.
+                        </div>
+                    `}
+                </div>
+
+                <div class="metric-row">
+                    <div class="metric-header">
+                        <span class="metric-title">👥 Followers</span>
+                        <span class="metric-score">${followersPercent.toFixed(0)}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${followersPercent}%"></div>
+                    </div>
+                    <div class="metric-details">
+                        • Current: ${breakdown.followers} followers = ${breakdown.followersPoints.toFixed(1)} points (×2 multiplier)
+                    </div>
+                    ${followersNeeded > 0 ? `
+                        <div class="recommendation">
+                            💡 Gain ${followersNeeded} more followers for ${(followersNeeded * 2).toFixed(1)} points
+                        </div>
+                        <div class="action-item">
+                            ✓ Contribute to popular open source projects<br>
+                            ✓ Write technical blog posts and share on dev.to<br>
+                            ✓ Engage with the community: comment, review PRs, help others
+                        </div>
+                    ` : `
+                        <div class="recommendation" style="color: var(--success);">
+                            ✓ Strong follower base! Keep engaging with the community.
+                        </div>
+                    `}
+                </div>
+
+                <div class="metric-row">
+                    <div class="metric-header">
+                        <span class="metric-title">📦 Public Repositories</span>
+                        <span class="metric-score">${reposPercent.toFixed(0)}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${reposPercent}%"></div>
+                    </div>
+                    <div class="metric-details">
+                        • Current: ${breakdown.repos} repos = ${breakdown.reposPoints.toFixed(1)} points (×0.5 multiplier)
+                    </div>
+                    ${reposNeeded > 0 ? `
+                        <div class="recommendation">
+                            💡 Create ${reposNeeded} more repos for ${(reposNeeded * 0.5).toFixed(1)} points
+                        </div>
+                        <div class="action-item">
+                            ✓ Quality over quantity: focus on meaningful projects<br>
+                            ✓ Showcase diverse skills: try different languages/frameworks<br>
+                            ✓ Keep old projects updated to show maintenance skills
+                        </div>
+                    ` : `
+                        <div class="recommendation" style="color: var(--success);">
+                            ✓ Great repository count! Focus on quality and stars now.
+                        </div>
+                    `}
+                </div>
+
+                <div style="margin-top: 20px; padding: 12px; background: rgba(63, 185, 80, 0.1); border-radius: 6px; border-left: 4px solid var(--success);">
+                    <strong>🎯 Priority Action:</strong><br>
+                    <span style="font-size: 0.9em;">
+                        ${starsNeeded > followersNeeded && starsNeeded > reposNeeded ? 
+                            'Focus on getting more stars by improving project quality and visibility' :
+                            followersNeeded > reposNeeded ?
+                            'Build your network by contributing to open source and engaging with the community' :
+                            'Create more diverse projects to showcase your skills across different domains'}
+                    </span>
+                </div>
+            `;
+        }
+
+        function toggleRubric(rubricId) {
+            const rubric = document.getElementById(rubricId);
+            const arrow = document.getElementById(rubricId === 'rubric1' ? 'arrow1' : 'arrow2');
+            
+            if (rubric.classList.contains('show')) {
+                rubric.classList.remove('show');
+                arrow.textContent = '▼';
+            } else {
+                rubric.classList.add('show');
+                arrow.textContent = '▲';
+            }
+        }
+
+        async function fetchAuditData(username) {
+            const userRes = await fetch(`https://api.github.com/users/${username}`);
+            const user = await userRes.json();
+            const reposRes = await fetch(`https://api.github.com/users/${username}/repos?per_page=100`);
+            const repos = await reposRes.json();
+            return { user, repos };
         }
 
         async function runComparison() {
@@ -128,28 +365,57 @@
             const metrics2 = calculateSaaSMetrics(data2);
 
             document.getElementById('dashboard').style.display = 'grid';
-
-            // Update Cards
-            document.getElementById('card1').innerHTML = `<img class="avatar" src="${data1.user.avatar_url}"><h2>${data1.user.name || u1}</h2><p>@${u1}</p>`;
-            document.getElementById('card2').innerHTML = `<img class="avatar" src="${data2.user.avatar_url}"><h2>${data2.user.name || u2}</h2><p>@${u2}</p>`;
+            
+            document.getElementById('avatar1').src = data1.user.avatar_url;
+            document.getElementById('name1').innerText = data1.user.name || u1;
+            document.getElementById('handle1').innerText = '@' + u1;
             document.getElementById('score1').innerText = metrics1.score + "%";
+            document.getElementById('rubric1').innerHTML = generateRubric(metrics1, u1);
+            
+            document.getElementById('avatar2').src = data2.user.avatar_url;
+            document.getElementById('name2').innerText = data2.user.name || u2;
+            document.getElementById('handle2').innerText = '@' + u2;
             document.getElementById('score2').innerText = metrics2.score + "%";
+            document.getElementById('rubric2').innerHTML = generateRubric(metrics2, u2);
 
-            // Radar Chart
-            const ctx = document.getElementById('comparisonRadar').getContext('2d');
-            if(radarChart) radarChart.destroy();
-            radarChart = new Chart(ctx, {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            if (window.radarChartInstance) window.radarChartInstance.destroy();
+            
+            window.radarChartInstance = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['Frontend', 'Backend', 'Systems', 'Data Science', 'Mobile'],
-                    datasets: [
-                        { label: u1, data: metrics1.skills, backgroundColor: 'rgba(88, 166, 255, 0.2)', borderColor: '#58a6ff', borderWidth: 2 },
-                        { label: u2, data: metrics2.skills, backgroundColor: 'rgba(247, 120, 186, 0.2)', borderColor: '#f778ba', borderWidth: 2 }
-                    ]
+                    labels: ['Frontend', 'Backend', 'Systems', 'Data', 'Mobile'],
+                    datasets: [{
+                        label: u1,
+                        data: metrics1.skills,
+                        backgroundColor: 'rgba(88, 166, 255, 0.2)',
+                        borderColor: 'rgba(88, 166, 255, 1)',
+                        pointBackgroundColor: 'rgba(88, 166, 255, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: u2,
+                        data: metrics2.skills,
+                        backgroundColor: 'rgba(247, 120, 186, 0.2)',
+                        borderColor: 'rgba(247, 120, 186, 1)',
+                        pointBackgroundColor: 'rgba(247, 120, 186, 1)',
+                        borderWidth: 2
+                    }]
                 },
                 options: {
-                    scales: { r: { angleLines: { color: '#30363d' }, grid: { color: '#30363d' }, pointLabels: { color: '#8b949e' }, ticks: { display: false }, min: 0 } },
-                    plugins: { legend: { labels: { color: '#c9d1d9' } } }
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: { stepSize: 2, color: '#8b949e' },
+                            grid: { color: '#30363d' },
+                            pointLabels: { color: '#c9d1d9', font: { size: 14 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#c9d1d9', font: { size: 14 } } }
+                    }
                 }
             });
         }
